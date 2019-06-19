@@ -3,7 +3,7 @@
 fragment message on Message {
   id
   content
-  user {
+  userByUserId {
     ...user
   }
   dateAdded

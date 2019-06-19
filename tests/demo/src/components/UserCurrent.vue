@@ -12,11 +12,15 @@ export default {
 
   methods: {
     async logout () {
-      await this.$apollo.mutate({
-        mutation: USER_LOGOUT,
-      })
       const apolloClient = this.$apollo.provider.defaultClient
       onLogout(apolloClient)
+      await this.$apollo.mutate({
+        mutation: USER_LOGOUT,
+        variables: {
+          input: {
+          },
+        },
+      })
     },
   },
 }

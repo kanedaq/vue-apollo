@@ -1,3 +1,9 @@
-mutation userRegister ($input: UserRegister!) {
-  userRegister(input: $input)
+mutation userRegister ($input: UserRegisterInput!) {
+  userRegister(input: $input) {
+    user {
+      id
+      nickname
+      email
+    }
+  }
 }

@@ -27,7 +27,7 @@ export default {
 
 <template>
   <div class="message-item">
-    <div class="user">{{ message.user.nickname }}</div>
+    <div class="user">{{ message.userByUserId.nickname }}</div>
     <div class="content" v-html="html"/>
   </div>
 </template>

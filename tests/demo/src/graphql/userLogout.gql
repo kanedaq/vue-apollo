@@ -1,3 +1,5 @@
-mutation userLogout {
-  userLogout
+mutation userLogout ($input: UserLogoutInput!) {
+  userLogout (input: $input) {
+    boolean
+  }
 }

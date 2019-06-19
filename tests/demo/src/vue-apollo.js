@@ -1,12 +1,13 @@
 import Vue from 'vue'
 import VueApollo from '../../../'
 import { createApolloClient, restartWebsockets } from 'vue-cli-plugin-apollo/graphql-client'
+import { InMemoryCache } from 'apollo-cache-inmemory'
 
 // Install the vue plugin
 Vue.use(VueApollo)
 
 // Name of the localStorage item
-const AUTH_TOKEN = 'apollo-token'
+const AUTH_TOKEN = 'postgraphile-demo-token'
 
 // Config
 const defaultOptions = {
@@ -28,13 +29,14 @@ const defaultOptions = {
   // link: myLink,
   // Override default cache
   // cache: myCache,
+  cache: new InMemoryCache(),
   // Additional ApolloClient options
   // apollo: { ... }
   getAuth: tokenName => {
     // get the authentication token from local storage if it exists
     const token = localStorage.getItem(tokenName)
     // return the headers to the context so httpLink can read them
-    return token || ''
+    return token ? ('Bearer ' + token) : ''
   },
 }
 
@@ -77,7 +79,7 @@ export function createProvider (options = {}, { router }) {
 
 // Manually call this when user log in
 export async function onLogin (apolloClient, token) {
-  localStorage.setItem(AUTH_TOKEN, JSON.stringify(token))
+  localStorage.setItem(AUTH_TOKEN, token)
   if (apolloClient.wsClient) restartWebsockets(apolloClient.wsClient)
   try {
     await apolloClient.resetStore()
@@ -102,6 +104,10 @@ export async function onLogout (apolloClient) {
 }
 
 function isUnauthorizedError (error) {
-  const { graphQLErrors } = error
-  return (graphQLErrors && graphQLErrors.some(e => e.message === 'Unauthorized'))
+  if (error) {
+    if (error.message.indexOf('Unauthorized') >= 0 || error.message.indexOf('permission denied') >= 0 || error.message.indexOf('status code 401') >= 0) {
+      return true
+    }
+  }
+  return false
 }

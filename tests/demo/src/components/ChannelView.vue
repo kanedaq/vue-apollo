@@ -28,25 +28,30 @@ export default {
 
   methods: {
     onMessageChanged (previousResult, { subscriptionData }) {
-      const { type, message } = subscriptionData.data.messageChanged
+      const { message, oldrec, type } = subscriptionData.data.messageChanged
 
-      // No list change
-      if (type === 'updated') return previousResult
-
-      const messages = previousResult.channel.messages.slice()
-      // Add or remove item
-      if (type === 'added') {
-        messages.push(message)
-      } else if (type === 'removed') {
-        const index = messages.findIndex(m => m.id === message.id)
-        if (index !== -1) messages.splice(index, 1)
+      const nodes = previousResult.channelById.messagesByChannelId.nodes.slice()
+      if (type === 'INSERT') {
+        nodes.push(message)
+      } else {
+        const index = nodes.findIndex(m => m.id === oldrec.id)
+        if (index !== -1) {
+          if (type === 'DELETE') {
+            nodes.splice(index, 1)
+          } else if (type === 'UPDATE') {
+            nodes.splice(index, 1, message)
+          }
+        }
       }
 
       // New query result
       return {
-        channel: {
-          ...previousResult.channel,
-          messages,
+        channelById: {
+          ...previousResult.channelById,
+          messagesByChannelId: {
+            ...previousResult.channelById.messagesByChannelId,
+            nodes,
+          },
         },
       }
     },
@@ -100,13 +105,13 @@ export default {
 
           <div class="wrapper">
             <div class="header">
-              <div class="id">#{{ data.channel.id }}</div>
-              <div class="name">{{ data.channel.name }}</div>
+              <div class="id">#{{ data.channelById.id }}</div>
+              <div class="name">{{ data.channelById.name }}</div>
             </div>
 
             <div ref="body" class="body">
               <MessageItem
-                v-for="message in data.channel.messages"
+                v-for="message in data.channelById.messagesByChannelId.nodes"
                 :key="message.id"
                 :message="message"
               />

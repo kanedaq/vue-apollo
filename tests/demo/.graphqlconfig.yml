@@ -1,6 +1,6 @@
 projects:
   app:
-    schemaPath: apollo-server/schema.graphql
+    schemaPath: postgraphile-server/schema.graphql
     includes:
       - '**/*.gql'
     extensions:

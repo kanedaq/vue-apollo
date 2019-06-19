@@ -1,7 +1,9 @@
 #import "./channelFragment.gql"
 
 query channels {
-  channels {
-    ...channel
+  allChannels {
+    nodes {
+      ...channel
+    }
   }
 }

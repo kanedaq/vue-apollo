@@ -36,13 +36,12 @@ export default {
         if (!result.data.userLogin) return
         const apolloClient = this.$apollo.provider.defaultClient
         // Update token and reset cache
-        const { id, userId, expiration } = result.data.userLogin.token
-        await onLogin(apolloClient, { id, userId, expiration })
+        await onLogin(apolloClient, result.data.userLogin.usrAndToken.token)
         // Update cache
         apolloClient.writeQuery({
           query: USER_CURRENT,
           data: {
-            userCurrent: result.data.userLogin.user,
+            userCurrent: result.data.userLogin.usrAndToken.usr,
           },
         })
       }
@@ -76,8 +75,10 @@ export default {
           },
         }
         : {
-          email,
-          password,
+          input: {
+            email,
+            password,
+          },
         }"
       class="wrapper"
       @done="onDone"

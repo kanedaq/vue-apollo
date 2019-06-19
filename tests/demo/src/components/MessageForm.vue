@@ -1,7 +1,4 @@
 <script>
-import MESSAGE_FRAGMENT from '../graphql/messageFragment.gql'
-import USER_FRAGMENT from '../graphql/userFragment.gql'
-
 export default {
   props: {
     channelId: {
@@ -22,25 +19,12 @@ export default {
       this.$refs.input.focus()
     },
   },
-
-  fragments: {
-    message: MESSAGE_FRAGMENT,
-    user: USER_FRAGMENT,
-  },
 }
 </script>
 
 <template>
   <ApolloMutation
-    :mutation="gql => gql`
-      mutation messageAdd ($input: MessageAdd!) {
-        messageAdd (input: $input) {
-          ...message
-        }
-      }
-      ${$options.fragments.message}
-      ${$options.fragments.user}
-    `"
+    :mutation="require('../graphql/messageAdd.gql')"
     :variables="{
       input: {
         channelId,

@@ -1,7 +1,9 @@
 #import "./messageFragment.gql"
 
-mutation messageRemove ($id: ID!) {
-  messageRemove (id: $id) {
-    ...message
+mutation messageRemove ($input: DeleteMessageByIdInput!) {
+  deleteMessageById (input: $input) {
+    message {
+      ...message
+    }
   }
 }

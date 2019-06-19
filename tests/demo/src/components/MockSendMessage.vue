@@ -4,8 +4,10 @@ import gql from 'graphql-tag'
 export default {
   created () {
     this.SEND = gql`
-      mutation mockMessageSend {
-        mockMessageSend
+      mutation mockMessageSend ($input: MockMessageSendInput!) {
+        mockMessageSend (input: $input) {
+          boolean
+        }
       }
     `
   },
@@ -15,6 +17,10 @@ export default {
 <template>
   <ApolloMutation
     :mutation="SEND"
+    :variables="{
+      input: {
+      },
+    }"
     class="mock-send-message"
   >
     <a

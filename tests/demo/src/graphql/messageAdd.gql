@@ -1,7 +1,9 @@
 #import "./messageFragment.gql"
 
-mutation messageAdd ($input: MessageAdd!) {
+mutation messageAdd ($input: MessageAddInput!) {
   messageAdd (input: $input) {
-    ...message
+    message {
+      ...message
+    }
   }
 }

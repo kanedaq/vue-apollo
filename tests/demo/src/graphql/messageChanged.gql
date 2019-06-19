@@ -1,10 +1,21 @@
 #import "./messageFragment.gql"
 
-subscription messageChanged ($channelId: ID!) {
+fragment messageNullable on MessageNullable {
+  id
+  channelId
+  userId
+  content
+  dateAdded
+  dateUpdated
+}
+subscription messageChanged ($channelId: String!) {
   messageChanged (channelId: $channelId) {
     type
     message {
       ...message
+    }
+    oldrec {
+      ...messageNullable
     }
   }
 }

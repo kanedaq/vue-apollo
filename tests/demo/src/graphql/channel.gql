@@ -1,11 +1,13 @@
 #import "./channelFragment.gql"
 #import "./messageFragment.gql"
 
-query channel ($id: ID!) {
-  channel (id: $id) {
+query channel ($id: String!) {
+  channelById (id: $id) {
     ...channel
-    messages {
-      ...message
+    messagesByChannelId {
+      nodes {
+        ...message
+      }
     }
   }
 }
