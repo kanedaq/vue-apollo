@@ -1,7 +1,9 @@
 <script>
 import UserCurrent from '../mixins/UserCurrent'
 import USER_CURRENT from '../graphql/userCurrent.gql'
-import { onLogin } from '../vue-apollo'
+import { onLogin, readGitlabState } from '../vue-apollo'
+import { getUrlQueries } from '../common'
+import USER_LOGIN from '../graphql/userLogin.gql'
 
 export default {
   name: 'UserLogin',
@@ -20,33 +22,40 @@ export default {
   },
 
   watch: {
-    // If already logged in redirect to other page
-    userCurrent (value) {
-      if (value) {
-        this.redirect()
-      }
+    // https://qiita.com/HayatoKamono/items/5958d8648007adf6881b
+    isOpen: {
+      immediate: true,
+      async handler () {
+        let queries = getUrlQueries()
+        let state = readGitlabState()
+        if (queries['state'] && queries['state'] === state) {
+          await this.$apollo.mutate({
+            mutation: USER_LOGIN,
+            variables: {
+              input: {
+                authorizationCode: queries['code'],
+              },
+            },
+          }).then(async (res) => {
+            const apolloClient = this.$apollo.provider.defaultClient
+            await onLogin(apolloClient, res.data.userLogin.usrAndToken.token)
+            apolloClient.writeQuery({
+              query: USER_CURRENT,
+              data: {
+                userCurrent: res.data.userLogin.usrAndToken.usr,
+              },
+            })
+            this.redirect()
+          }).catch((error) => {
+            console.error(error)
+          })
+        }
+        // localStorage.removeItem(AUTH_GITLAB_STATE)
+      },
     },
   },
 
   methods: {
-    async onDone (result) {
-      if (this.showRegister) {
-        this.showRegister = false
-      } else {
-        if (!result.data.userLogin) return
-        const apolloClient = this.$apollo.provider.defaultClient
-        // Update token and reset cache
-        await onLogin(apolloClient, result.data.userLogin.usrAndToken.token)
-        // Update cache
-        apolloClient.writeQuery({
-          query: USER_CURRENT,
-          data: {
-            userCurrent: result.data.userLogin.usrAndToken.usr,
-          },
-        })
-      }
-    },
-
     redirect () {
       this.$router.replace(this.$route.params.wantedRoute || { name: 'home' })
     },
@@ -62,85 +71,6 @@ export default {
     <div class="app-name">
       Apollo<b>Chat</b>
     </div>
-    <ApolloMutation
-      :mutation="showRegister
-        ? require('../graphql/userRegister.gql')
-        : require('../graphql/userLogin.gql')"
-      :variables="showRegister
-        ? {
-          input: {
-            email,
-            password,
-            nickname,
-          },
-        }
-        : {
-          input: {
-            email,
-            password,
-          },
-        }"
-      class="wrapper"
-      @done="onDone"
-    >
-      <form
-        slot-scope="{ mutate, loading, gqlError: error }"
-        :key="showRegister"
-        class="form"
-        @submit.prevent="mutate()"
-      >
-        <input
-          v-model="email"
-          class="form-input"
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-        >
-        <input
-          v-model="password"
-          class="form-input"
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        >
-        <input
-          v-if="showRegister"
-          v-model="nickname"
-          class="form-input"
-          name="nickname"
-          placeholder="Nickname"
-          required
-        >
-        <div v-if="error" class="error">{{ error.message }}</div>
-        <template v-if="!showRegister">
-          <button
-            type="submit"
-            :disabled="loading"
-            class="button"
-            data-id="login"
-          >Login</button>
-          <div class="actions">
-            <a
-              data-id="create-account"
-              @click="showRegister = true"
-            >Create an account</a>
-          </div>
-        </template>
-        <template v-else>
-          <button
-            type="submit"
-            :disabled="loading"
-            class="button"
-            data-id="submit-new-account"
-          >Create new account</button>
-          <div class="actions">
-            <a @click="showRegister = false">Go back</a>
-          </div>
-        </template>
-      </form>
-    </ApolloMutation>
   </div>
 </template>
 

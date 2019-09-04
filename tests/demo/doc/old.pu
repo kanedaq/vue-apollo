@@ -1,0 +1,15 @@
+@startuml
+actor User
+participant Webフロント
+database PostGraphile
+
+activate User
+  User -> Webフロント: ログイン
+  activate Webフロント
+    Webフロント -> PostGraphile: 自前のユーザー認証
+    activate PostGraphile
+    return PostGraphile用JWT
+  return Welcome
+deactivate User
+
+@enduml

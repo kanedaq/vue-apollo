@@ -2,10 +2,11 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import { createProvider } from './vue-apollo'
+import { redirectGitlab, createProvider } from './vue-apollo'
 
 Vue.config.productionTip = false
 
+redirectGitlab()
 const apolloProvider = createProvider({}, { router })
 
 new Vue({

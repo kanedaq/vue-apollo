@@ -2,12 +2,14 @@ import Vue from 'vue'
 import VueApollo from '../../../'
 import { createApolloClient, restartWebsockets } from 'vue-cli-plugin-apollo/graphql-client'
 import { InMemoryCache } from 'apollo-cache-inmemory'
+import { getUrlQueries } from './common'
 
 // Install the vue plugin
 Vue.use(VueApollo)
 
 // Name of the localStorage item
 const AUTH_TOKEN = 'postgraphile-demo-token'
+const AUTH_GITLAB_STATE = 'postgraphile-demo-gitlab-state'
 
 // Config
 const defaultOptions = {
@@ -38,6 +40,26 @@ const defaultOptions = {
     // return the headers to the context so httpLink can read them
     return token ? ('Bearer ' + token) : ''
   },
+
+  gitlab_authorization_endpoint: 'http://localhost:10080/oauth/authorize',
+  gitlab_response_type: 'code',
+  gitlab_client_id: 'cfd5dbe5d3093f2eb497030463737dc8438ead0e3779563ead3aaefdfc0838da',
+  gitlab_scope: 'openid email',
+  gitlab_redirect_uri: 'http://localhost:8080/demo/login',
+}
+
+export function readGitlabState () {
+  return localStorage.getItem(AUTH_GITLAB_STATE)
+}
+
+export function redirectGitlab () {
+  let queries = getUrlQueries()
+  if (!queries['code']) {
+    let state = 'abcde'
+    localStorage.setItem(AUTH_GITLAB_STATE, state)
+    localStorage.removeItem(AUTH_TOKEN)
+    window.location = `${defaultOptions.gitlab_authorization_endpoint}?response_type=${defaultOptions.gitlab_response_type}&state=${state}&client_id=${defaultOptions.gitlab_client_id}&scope=${defaultOptions.gitlab_scope}&redirect_uri=${defaultOptions.gitlab_redirect_uri}`
+  }
 }
 
 // Call this in the Vue app file

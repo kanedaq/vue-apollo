@@ -1,0 +1,15 @@
+@startuml
+actor User
+participant Webフロント
+database PostGraphile
+
+activate User
+  User -> Webフロント: 問い合わせ
+  activate Webフロント
+   Webフロント -> PostGraphile: GraphQLリクエスト(JWT)
+   activate PostGraphile
+    return GraphQLレスポンス
+  return 問い合わせ結果
+deactivate User
+
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+actor User
+participant Webフロント
+box "オンプレGitLab"
+  participant 認可エンドポイント
+  participant トークンエンドポイント
+  participant UserInfoエンドポイント
+end box
+database PostGraphile
+
+activate User
+  User -> Webフロント: 開く
+
+  activate Webフロント
+    Webフロント -> 認可エンドポイント: リダイレクト：認証認可リクエスト
+  deactivate Webフロント
+
+  activate 認可エンドポイント
+    opt 未ログイン
+      認可エンドポイント -> User: 認証認可画面
+      User --> 認可エンドポイント: 認証認可
+    end
+    認可エンドポイント ---> Webフロント: リダイレクト：認可コード
+  deactivate 認可エンドポイント
+
+  activate Webフロント
+    Webフロント -> PostGraphile: バックエンドでユーザー認証の続き(認可コード)
+    activate PostGraphile
+      PostGraphile -> トークンエンドポイント: トークン要求(認可コード, クライアントシークレット)
+      activate トークンエンドポイント
+        return IDトークン、アクセストークン
+      deactivate トークンエンドポイント
+
+      PostGraphile -> PostGraphile: IDトークン検証
+
+      PostGraphile -> UserInfoエンドポイント: ユーザー情報要求(アクセストークン)
+      activate UserInfoエンドポイント
+        return ユーザー情報
+      deactivate UserInfoエンドポイント
+
+      PostGraphile --> Webフロント: PostGraphile用JWT
+    deactivate PostGraphile
+
+  Webフロント --> User: Welcome
+  deactivate Webフロント
+deactivate User
+
+@enduml
